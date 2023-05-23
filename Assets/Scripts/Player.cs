@@ -1,3 +1,4 @@
+
 using Unity.Netcode;
 using UnityEngine;
 
@@ -5,23 +6,33 @@ namespace HelloWorld
 {
     public class Player : NetworkBehaviour
     {
+        NetworkVariable<int> PlayerColor = new NetworkVariable<int>();
+        MeshRenderer mr;
+
+
+        // [SerializeField]
+        // List<Material> playerColors;
+
         void Start()
         {
         }
 
         public override void OnNetworkSpawn()
         {
-            InitValues();
+            Initialize();
 
             if (IsOwner)
             {
                 // Para que non se espaneen no mesmo punto
-                InitRandomPosition();
+                SetStartPositionServerRpc();
             }
         }
 
-        void InitValues()
+        void Initialize()
         {
+            // PlayerColor.Value = 0;
+            mr = GetComponent<MeshRenderer>();
+
             // Dev
             var ngo = GetComponent<NetworkObject>();
             string uid = ngo.NetworkObjectId.ToString();
@@ -56,7 +67,7 @@ namespace HelloWorld
             Debug.Log($"{gameObject.name}.Print");
             PrintServerRpc();
         }
-        void InitRandomPosition() { SubmitRandomPositionRequestServerRpc(); }
+        // void InitRandomPosition() { SubmitRandomPositionRequestServerRpc(); }
 
         [ServerRpc]
         void PrintServerRpc()
@@ -66,11 +77,14 @@ namespace HelloWorld
 
 
         [ServerRpc]
-        void SubmitRandomPositionRequestServerRpc(ServerRpcParams rpcParams = default)
+        void SetStartPositionServerRpc(ServerRpcParams rpcParams = default)
         {
             // Posición aleatoria no taboleiro
-            // Transform se propaga en rede sen Network variable
-            transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+            // No espazo centra no que o xogador aínda non ten equipo
+            transform.position = new Vector3(Random.Range(-1.5f, 1.5f), 1f, Random.Range(-4.5f, 5f));
+            PlayerColor.Value = 0;
+            // mr.material = GameManager.instance.playerColors[0];
+
         }
 
         [ServerRpc]
@@ -115,7 +129,12 @@ namespace HelloWorld
                 // Debug.Log($"\t Input A | Input Left arrow");
 
                 MoveServerRpc(Vector3.left);
+            }
+            if (mr.material.color != GameManager.instance.playerColors[PlayerColor.Value].color)
+            {
+                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update Material");
 
+                mr.material = GameManager.instance.playerColors[PlayerColor.Value];
             }
         }
     }

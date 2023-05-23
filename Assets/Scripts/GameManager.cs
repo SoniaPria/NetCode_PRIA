@@ -1,10 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace HelloWorld
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : NetworkBehaviour
     {
+        public static GameManager instance;
+
+        public List<Material> playerColors;
+        float axisLeft, axisRight;
+
+        void OnEnable()
+        {
+            if (instance != null && instance != this)
+            {
+                Destroy(this);
+            }
+            instance = this;
+
+            axisLeft = -2f;
+            axisRight = 2f;
+        }
+
         void OnGUI()
         {
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
@@ -48,14 +67,14 @@ namespace HelloWorld
                     {
                         NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
                             .GetComponent<Player>()
-                            .Move();
+                            .Print();
                     }
                 }
                 else
                 {
                     var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                     var player = playerObject.GetComponent<Player>();
-                    player.Move();
+                    player.Print();
                 }
             }
         }
