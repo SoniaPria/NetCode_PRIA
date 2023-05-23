@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerColors:
-  - {fileID: 2100000, guid: ad3a64794b5be0942bf5f5d15176ccb1, type: 2}
+  - {fileID: 2100000, guid: e2e459a9793b6d4448b7195bae355c4b, type: 2}
   - {fileID: 2100000, guid: 195e37f823a8eaf45af0c0cd99fca430, type: 2}
   - {fileID: 2100000, guid: 384445dc504cf9548a8b638a2a8c7906, type: 2}
 --- !u!114 &-1738437778664091986

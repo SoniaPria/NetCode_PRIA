@@ -9,7 +9,8 @@ namespace HelloWorld
     {
         public static GameManager instance;
 
-        public List<Material> playerColors;
+        // public List<Material> playerColors;
+
         float axisLeft, axisRight;
 
         void OnEnable()
@@ -61,20 +62,20 @@ namespace HelloWorld
         {
             if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Todos a Inicio" : "Mover a inicio"))
             {
-                if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
+                if (NetworkManager.Singleton.IsServer)
                 {
                     foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
                     {
                         NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
                             .GetComponent<Player>()
-                            .Print();
+                            .MoveNeutralClientRpc();
                     }
                 }
                 else
                 {
                     var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                     var player = playerObject.GetComponent<Player>();
-                    player.Print();
+                    player.MoveNeutralServerRpc();
                 }
             }
         }

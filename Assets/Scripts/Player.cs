@@ -1,4 +1,5 @@
-
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,7 +7,9 @@ namespace HelloWorld
 {
     public class Player : NetworkBehaviour
     {
-        NetworkVariable<int> PlayerColor = new NetworkVariable<int>();
+        [SerializeField]
+        List<Material> playerColors;
+
         MeshRenderer mr;
 
 
@@ -57,9 +60,25 @@ namespace HelloWorld
             // --- end Dev
         }
 
-        public void Move()
+        public void MoveNeutral()
         {
-            // Debug.Log("");
+            Debug.Log($"{gameObject.name}.MoveNeutral");
+
+            Vector3 tmpPosition = transform.position;
+            tmpPosition.x = Random.Range(-1.5f, 1.5f);
+            transform.position = tmpPosition;
+        }
+
+        [ClientRpc]
+        public void MoveNeutralClientRpc(ClientRpcParams rpcParams = default)
+        {
+            MoveNeutral();
+        }
+
+        [ServerRpc]
+        public void MoveNeutralServerRpc(ServerRpcParams rpcParams = default)
+        {
+            MoveNeutral();
         }
 
         public void Print()
@@ -68,6 +87,28 @@ namespace HelloWorld
             PrintServerRpc();
         }
         // void InitRandomPosition() { SubmitRandomPositionRequestServerRpc(); }
+
+
+        [ClientRpc]
+        public void SetTeemColorClientRpc(int zone = 0, ClientRpcParams clientRpcParams = default)
+        {
+            if (zone == 1)
+            {
+                mr.material = playerColors[1];
+            }
+
+            else if (zone == 2)
+            {
+                mr.material = playerColors[2];
+            }
+
+            else
+            {
+                mr.material = playerColors[2];
+            }
+        }
+
+
 
         [ServerRpc]
         void PrintServerRpc()
@@ -82,9 +123,6 @@ namespace HelloWorld
             // Posición aleatoria no taboleiro
             // No espazo centra no que o xogador aínda non ten equipo
             transform.position = new Vector3(Random.Range(-1.5f, 1.5f), 1f, Random.Range(-4.5f, 5f));
-            PlayerColor.Value = 0;
-            // mr.material = GameManager.instance.playerColors[0];
-
         }
 
         [ServerRpc]
@@ -130,11 +168,26 @@ namespace HelloWorld
 
                 MoveServerRpc(Vector3.left);
             }
-            if (mr.material.color != GameManager.instance.playerColors[PlayerColor.Value].color)
-            {
-                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update Material");
+            // if (mr.material.color != GameManager.instance.playerColors[PlayerColor.Value].color)
+            // {
+            //     // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update Material");
 
-                mr.material = GameManager.instance.playerColors[PlayerColor.Value];
+            //     mr.material = GameManager.instance.playerColors[PlayerColor.Value];
+            // }
+
+            if (transform.position.x < -1.5f)
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
+            }
+
+            else if (transform.position.x > 1.5f)
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
+            }
+
+            else
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
             }
         }
     }
