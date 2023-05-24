@@ -21,7 +21,6 @@ public class Player : NetworkBehaviour
         if (IsOwner)
         {
             SetStartPositionServerRpc();
-            PlayerColor.Value = 0;
         }
     }
 
@@ -50,22 +49,8 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     public void SetTeemColorServerRpc(int zone = 0, ServerRpcParams clientRpcParams = default)
     {
-        if (zone == 1)
-        {
-            mr.material = playerColors[1];
-        }
-
-        else if (zone == 2)
-        {
-            mr.material = playerColors[2];
-        }
-
-        else
-        {
-            mr.material = playerColors[2];
-        }
+        PlayerColor.Value = zone;
     }
-
 
 
     [ServerRpc]
@@ -110,35 +95,18 @@ public class Player : NetworkBehaviour
             MoveServerRpc(Vector3.left);
         }
 
-        if (mr.material.color != playerColors[PlayerColor.Value].color)
-        {
-            mr.material = playerColors[PlayerColor.Value];
-        }
-
         if (transform.position.x < -1.5f)
         {
-            PlayerColor.Value = 1;
-            mr.material = playerColors[1];
-            // SetTeemColorServerRpc(1);
-
             Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
         }
 
         else if (transform.position.x > 1.5f)
         {
-            PlayerColor.Value = 2;
-            mr.material = playerColors[1];
-            // SetTeemColorServerRpc(2);
-
             Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
         }
 
         else
         {
-            PlayerColor.Value = 0;
-            mr.material = playerColors[1];
-            // SetTeemColorServerRpc(0);
-
             Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
         }
     }
