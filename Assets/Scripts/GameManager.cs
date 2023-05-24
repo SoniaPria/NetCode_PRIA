@@ -53,13 +53,13 @@ public class GameManager : NetworkBehaviour
     {
         if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Todos a Inicio" : "Mover a inicio"))
         {
-            if (NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
             {
                 foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
                 {
                     NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
                         .GetComponent<Player>()
-                        .MoveNeutralClientRpc();
+                        .MoveNeutral();
                 }
             }
             else
