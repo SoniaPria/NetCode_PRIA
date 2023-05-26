@@ -18,6 +18,8 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        mr = GetComponent<MeshRenderer>();
+
         if (IsOwner)
         {
             SetStartPositionServerRpc();
@@ -26,13 +28,15 @@ public class Player : NetworkBehaviour
 
     public void MoveNeutral()
     {
-        Debug.Log($"{gameObject.name}.MoveNeutral");
+        // A posición sincronízase en local
+        // Co compoñente Network Transform
 
         float f2 = 0.1f;
         Vector3 tmpPosition = transform.position;
         tmpPosition.x = Random.Range(-1.5f, 1.5f + f2);
         transform.position = tmpPosition;
     }
+
 
 
     [ServerRpc]
@@ -45,6 +49,7 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     public void SetTeemColorServerRpc(int zone = 0, ServerRpcParams clientRpcParams = default)
     {
+        // Pídese ao server que actualize a NetworkVariable ca cor de equipo
         PlayerColor.Value = zone;
     }
 
@@ -52,9 +57,13 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     void SetStartPositionServerRpc(ServerRpcParams rpcParams = default)
     {
+        PlayerColor.Value = 0;
+
         float f2 = 0.1f;
+
         // Posición aleatoria no taboleiro
         // No espazo central no que os xogadores non están en ningún equipo
+
         transform.position = new Vector3(
             Random.Range(-1.5f, 1.5f + f2),
             1f,
@@ -99,18 +108,25 @@ public class Player : NetworkBehaviour
 
             if (transform.position.x < -1.5f)
             {
-                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
+                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
+                // PlayerColor.Value = 1;
+                SetTeemColorServerRpc(1);
             }
 
             else if (transform.position.x > 1.5f)
             {
-                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
+                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
+                // PlayerColor.Value = 2;
+                SetTeemColorServerRpc(2);
             }
 
             else
             {
-                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
+                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
+                // PlayerColor.Value = 0;
+                SetTeemColorServerRpc(0);
             }
         }
+        mr.material = playerColors[PlayerColor.Value];
     }
 }
