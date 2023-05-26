@@ -12,19 +12,41 @@ public class Player : NetworkBehaviour
 
     MeshRenderer mr;
 
-    void Start()
-    {
-    }
+    // void Start() { }
 
     public override void OnNetworkSpawn()
     {
+        // Delegate que publica se una NetworkVariable muda de valor
+        // Suscripción
+        PlayerColor.OnValueChanged += OnColorChanged;
+
         mr = GetComponent<MeshRenderer>();
 
         if (IsOwner)
         {
-            SetStartPositionServerRpc();
+            InitializeServerRpc();
+        }
+        else
+        {
+            mr.material = playerColors[PlayerColor.Value];
         }
     }
+
+    public override void OnNetworkDespawn()
+    {
+        // Des-suscripción ao Delegate cando o player pecha sesión
+        PlayerColor.OnValueChanged -= OnColorChanged;
+    }
+
+    // --- Delegates
+    public void OnColorChanged(int previous, int current)
+    {
+        // Debug.Log($"{gameObject.name}.OnColorChanged: Previous: {previous} | Current: {current}");
+        mr.material = playerColors[PlayerColor.Value];
+    }
+
+
+    // --- Metodos locais
 
     public void MoveNeutral()
     {
@@ -38,24 +60,10 @@ public class Player : NetworkBehaviour
     }
 
 
+    // --- ServerRpc's
 
     [ServerRpc]
-    public void MoveNeutralServerRpc(ServerRpcParams rpcParams = default)
-    {
-        MoveNeutral();
-    }
-
-
-    [ServerRpc]
-    public void SetTeemColorServerRpc(int zone = 0, ServerRpcParams clientRpcParams = default)
-    {
-        // Pídese ao server que actualize a NetworkVariable ca cor de equipo
-        PlayerColor.Value = zone;
-    }
-
-
-    [ServerRpc]
-    void SetStartPositionServerRpc(ServerRpcParams rpcParams = default)
+    void InitializeServerRpc(ServerRpcParams rpcParams = default)
     {
         PlayerColor.Value = 0;
 
@@ -76,8 +84,31 @@ public class Player : NetworkBehaviour
     {
         // Posición enviada por Input de Player
         transform.position += direction;
+
+        if (transform.position.x < -1.5f)
+        {
+            // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
+            PlayerColor.Value = 1;
+        }
+
+        else if (transform.position.x > 1.5f)
+        {
+            // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
+            PlayerColor.Value = 2;
+        }
+
+        else
+        {
+            // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
+            PlayerColor.Value = 0;
+        }
     }
 
+    [ServerRpc]
+    public void MoveNeutralServerRpc(ServerRpcParams rpcParams = default)
+    {
+        MoveNeutral();
+    }
 
 
     void Update()
@@ -105,28 +136,6 @@ public class Player : NetworkBehaviour
             {
                 MoveServerRpc(Vector3.left);
             }
-
-            if (transform.position.x < -1.5f)
-            {
-                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
-                // PlayerColor.Value = 1;
-                SetTeemColorServerRpc(1);
-            }
-
-            else if (transform.position.x > 1.5f)
-            {
-                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
-                // PlayerColor.Value = 2;
-                SetTeemColorServerRpc(2);
-            }
-
-            else
-            {
-                // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
-                // PlayerColor.Value = 0;
-                SetTeemColorServerRpc(0);
-            }
         }
-        mr.material = playerColors[PlayerColor.Value];
     }
 }
