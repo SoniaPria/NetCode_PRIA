@@ -28,16 +28,12 @@ public class Player : NetworkBehaviour
     {
         Debug.Log($"{gameObject.name}.MoveNeutral");
 
+        float f2 = 0.1f;
         Vector3 tmpPosition = transform.position;
-        tmpPosition.x = Random.Range(-1.5f, 1.5f);
+        tmpPosition.x = Random.Range(-1.5f, 1.5f + f2);
         transform.position = tmpPosition;
     }
 
-    [ClientRpc]
-    public void MoveNeutralClientRpc(ClientRpcParams rpcParams = default)
-    {
-        MoveNeutral();
-    }
 
     [ServerRpc]
     public void MoveNeutralServerRpc(ServerRpcParams rpcParams = default)
@@ -56,16 +52,20 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     void SetStartPositionServerRpc(ServerRpcParams rpcParams = default)
     {
+        float f2 = 0.1f;
         // Posición aleatoria no taboleiro
-        // No espazo centra no que o xogador aínda non ten equipo
-        transform.position = new Vector3(Random.Range(-1.5f, 1.5f), 1f, Random.Range(-4.5f, 5f));
+        // No espazo central no que os xogadores non están en ningún equipo
+        transform.position = new Vector3(
+            Random.Range(-1.5f, 1.5f + f2),
+            1f,
+            Random.Range(-4.5f, 4.5f + f2)
+        );
     }
 
     [ServerRpc]
     void MoveServerRpc(Vector3 direction, ServerRpcParams rpcParams = default)
     {
         // Posición enviada por Input de Player
-        // Transform se propaga en rede sen Network variable
         transform.position += direction;
     }
 
@@ -73,41 +73,44 @@ public class Player : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner) { return; }
-
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        if (IsOwner)
         {
-            MoveServerRpc(Vector3.forward);
-        }
+            if (Input.GetKeyDown(KeyCode.M)) { MoveNeutralServerRpc(); }
 
-        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            MoveServerRpc(Vector3.right);
-        }
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                MoveServerRpc(Vector3.forward);
+            }
 
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            MoveServerRpc(Vector3.back);
-        }
+            if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                MoveServerRpc(Vector3.right);
+            }
 
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            MoveServerRpc(Vector3.left);
-        }
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                MoveServerRpc(Vector3.back);
+            }
 
-        if (transform.position.x < -1.5f)
-        {
-            Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
-        }
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                MoveServerRpc(Vector3.left);
+            }
 
-        else if (transform.position.x > 1.5f)
-        {
-            Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
-        }
+            if (transform.position.x < -1.5f)
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
+            }
 
-        else
-        {
-            Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
+            else if (transform.position.x > 1.5f)
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
+            }
+
+            else
+            {
+                Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
+            }
         }
     }
 }

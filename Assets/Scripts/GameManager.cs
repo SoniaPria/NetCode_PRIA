@@ -51,22 +51,23 @@ public class GameManager : NetworkBehaviour
 
     static void SubmitNeutralZone()
     {
-        if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Todos a Inicio" : "Mover a inicio"))
+        if (GUILayout.Button((NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
+            ? "Todos a Inicio" : "Mover a inicio"))
         {
-            if (NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
             {
                 foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
                 {
                     NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
                         .GetComponent<Player>()
-                        .MoveNeutralClientRpc();
+                        .MoveNeutral();
                 }
             }
             else
             {
-                var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
-                var player = playerObject.GetComponent<Player>();
-                player.MoveNeutralServerRpc();
+                NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject()
+                    .GetComponent<Player>()
+                    .MoveNeutralServerRpc();
             }
         }
     }
