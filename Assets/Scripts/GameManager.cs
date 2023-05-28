@@ -8,9 +8,9 @@ public class GameManager : NetworkBehaviour
     public static GameManager instance;
 
     // Nº de equipos
-    [SerializeField] const int MAX_TEAMS = 2;
+    [SerializeField] int MAX_TEAMS = 2;
     // Máximo de players por equipo
-    [SerializeField] const int MAX_TEAM_PLAYERS = 2;
+    [SerializeField] int MAX_TEAM_PLAYERS = 2;
 
     // Lista de xogadores por equipo
     // o index 0 é a zona neutra, os seguintes son os nº de equipo
