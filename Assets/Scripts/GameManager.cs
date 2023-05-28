@@ -7,13 +7,40 @@ public class GameManager : NetworkBehaviour
 {
     public static GameManager instance;
 
+    // Nº de equipos
+    [SerializeField] const int MAX_TEAMS = 2;
+    // Máximo de players por equipo
+    [SerializeField] const int MAX_TEAM_PLAYERS = 2;
+
+    // Lista de xogadores por equipo
+    // o index 0 é a zona neutra, os seguintes son os nº de equipo
+    static List<int> playersTeam = new List<int>();
+
+    public List<int> PlayersTeam
+    {
+        get { return playersTeam; }
+        set { playersTeam = value; }
+    }
+
+    public int MaxTeamPlayers { get { return MAX_TEAM_PLAYERS; } }
+
+
     void OnEnable()
     {
+        // Simple Singleton
         if (instance != null && instance != this)
         {
             Destroy(this);
         }
         instance = this;
+
+        // Inicialización de equipos, MAX_TEAMS + Neutral
+        // e xogadores por equipo (ningún)
+        for (int i = 0; i <= MAX_TEAMS; i++)
+        {
+            // Inicialización de players por equipo
+            playersTeam.Add(0);
+        }
     }
 
     void OnGUI()
