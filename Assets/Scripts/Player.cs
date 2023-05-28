@@ -66,27 +66,6 @@ public class Player : NetworkBehaviour
         // Suscripción a Delegates
         PlayerColor.OnValueChanged += OnColorChanged;
         PlayerTeam.OnValueChanged += OnTeamChanged;
-
-
-        // Nome único para cada player
-        // Esto é util para recoñecer ás instancias na escea de Unity
-        // e para agregar o nome ás listas de equipos
-
-        var ngo = GetComponent<NetworkObject>();
-        string uid = ngo.NetworkObjectId.ToString();
-
-        if (ngo.IsOwnedByServer)
-        {
-            gameObject.name = $"HostPlayer_{uid}";
-        }
-        else if (ngo.IsOwner)
-        {
-            gameObject.name = $"LocalPlayer_{uid}";
-        }
-        else
-        {
-            gameObject.name = "Net_Player_" + uid;
-        }
     }
 
     public void MoveNeutral()
@@ -99,6 +78,35 @@ public class Player : NetworkBehaviour
         tmpPosition.x = Random.Range(-1.5f, 1.5f + f2);
         transform.position = tmpPosition;
     }
+
+    int GetRandomTeamColor(int rdmMmin, int rdmMax)
+    {
+        // Debug.Log($"{gameObject.name}.Player.SetRandomColor");
+
+        int rdmColor;
+        bool takenColor = false;
+
+        do
+        {
+            rdmColor = Random.Range(rdmMmin, rdmMax + 1);
+            foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                var player = NetworkManager.Singleton.SpawnManager
+                    .GetPlayerNetworkObject(uid).GetComponent<Player>();
+
+                takenColor = false;
+
+                if (rdmColor == player.PlayerColor.Value)
+                {
+                    takenColor = true;
+                    break;
+                }
+            }
+        } while (takenColor);
+
+        return rdmColor;
+    }
+
 
 
     // --- ClientRpc's
@@ -139,22 +147,22 @@ public class Player : NetworkBehaviour
         if (transform.position.x < -1.5f)
         {
             // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Vermello");
-            PlayerColor.Value = 1;
             PlayerTeam.Value = 1;
+            PlayerColor.Value = GetRandomTeamColor(1, 3);
         }
 
         else if (transform.position.x > 1.5f)
         {
             // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Azul");
-            PlayerColor.Value = 2;
             PlayerTeam.Value = 2;
+            PlayerColor.Value = GetRandomTeamColor(4, 6);
         }
 
         else
         {
             // Debug.Log($"{gameObject.name} X = {transform.position.x} Equipo Neutro");
-            PlayerColor.Value = 0;
             PlayerTeam.Value = 0;
+            PlayerColor.Value = 0;
         }
     }
 

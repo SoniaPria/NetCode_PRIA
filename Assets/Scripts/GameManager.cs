@@ -23,8 +23,6 @@ public class GameManager : NetworkBehaviour
         set { playersTeam = value; }
     }
 
-    // public int MaxTeamPlayers { get { return MAX_TEAM_PLAYERS; } }
-
 
     void OnEnable()
     {

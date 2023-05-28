@@ -132,7 +132,11 @@ MonoBehaviour:
   playerColors:
   - {fileID: 2100000, guid: ad3a64794b5be0942bf5f5d15176ccb1, type: 2}
   - {fileID: 2100000, guid: 195e37f823a8eaf45af0c0cd99fca430, type: 2}
+  - {fileID: 2100000, guid: 5d4da98f110291921ab9e65a462d091f, type: 2}
+  - {fileID: 2100000, guid: 1f416406f407ce938b7b089182845b9f, type: 2}
   - {fileID: 2100000, guid: 384445dc504cf9548a8b638a2a8c7906, type: 2}
+  - {fileID: 2100000, guid: 42cee2428bb817f9997c6c7f0ef9fca6, type: 2}
+  - {fileID: 2100000, guid: e60e502ccf0e50882af42ced9e96a412, type: 2}
 --- !u!114 &-1738437778664091986
 MonoBehaviour:
   m_ObjectHideFlags: 0
