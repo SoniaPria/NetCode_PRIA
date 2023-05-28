@@ -14,6 +14,9 @@ public class Player : NetworkBehaviour
 
     MeshRenderer mr;
 
+    // Propiedade pública para o GameManager
+    public int NwPlayerTeam { get { return PlayerTeam.Value; } }
+
     // void Start() { }
 
     public override void OnNetworkSpawn()
@@ -46,70 +49,11 @@ public class Player : NetworkBehaviour
 
     public void OnTeamChanged(int previous, int current)
     {
-
-        // Descontamos o player do equipo anterior
-        // playersTeam[previous]--;
-        GameManager.instance.PlayersTeam[previous]--;
-
-        // Sumamos o player ao novo equipo
-        // playersTeam[current]++;
-        GameManager.instance.PlayersTeam[current]++;
-
-        // Debug.Log($"{gameObject.name}.OnTeamChanged({previous}, {current})");
-        // Debug.Log($"\t GameManager.instance.PlayersTeam({GameManager.instance.PlayersTeam[0]}, {GameManager.instance.PlayersTeam[1]}, {GameManager.instance.PlayersTeam[2]})");
-
-        // Cando un equipo non neutral chegue ao límite de players
-        if (GameManager.instance.PlayersTeam[current] == GameManager.instance.MaxTeamPlayers
-            && IsOwner)
-        {
-            SetPlayerCanMoveServerRpc(current);
-        }
+        GameManager.instance.CheckPlayersMovePermission(previous, current);
     }
 
-    [ServerRpc]
-    void SetPlayerCanMoveServerRpc(int currentTeam, ServerRpcParams rpcParams = default)
-    {
-        foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
-        {
-            var player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
-                .GetComponent<Player>();
-
-            // Cando un xogador se move de un equipo cheo a Neutro, actívase o movimento a todos
-            if (currentTeam == 0)
-            {
-                player.PlayerCanMove.Value = true;
-
-            }
-
-            else
-            {
-                if (currentTeam == player.PlayerTeam.Value)
-                {
-                    player.PlayerCanMove.Value = true;
-                }
-
-                else
-                {
-                    player.PlayerCanMove.Value = false;
-                }
-            }
-
-            // Debug.Log($"{gameObject.name}.Player.Value = {PlayerTeam.Value} CanMove = {PlayerCanMove.Value}");
-        }
-    }
 
     // --- Metodos locais
-
-    public void MoveNeutral()
-    {
-        // A posición sincronízase en local
-        // Co compoñente Network Transform
-
-        float f2 = 0.1f;
-        Vector3 tmpPosition = transform.position;
-        tmpPosition.x = Random.Range(-1.5f, 1.5f + f2);
-        transform.position = tmpPosition;
-    }
 
     void Initialize()
     {
@@ -145,6 +89,25 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void MoveNeutral()
+    {
+        // A posición sincronízase en local
+        // Co compoñente Network Transform
+
+        float f2 = 0.1f;
+        Vector3 tmpPosition = transform.position;
+        tmpPosition.x = Random.Range(-1.5f, 1.5f + f2);
+        transform.position = tmpPosition;
+    }
+
+
+    // --- ClientRpc's
+
+    [ClientRpc]
+    public void SetPlayerCanMoveClientRpc(bool canMove, ClientRpcParams clientRpcParams = default)
+    {
+        PlayerCanMove.Value = canMove;
+    }
 
     // --- ServerRpc's
 

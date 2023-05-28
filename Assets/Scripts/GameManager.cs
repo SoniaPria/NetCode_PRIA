@@ -16,13 +16,14 @@ public class GameManager : NetworkBehaviour
     // o index 0 é a zona neutra, os seguintes son os nº de equipo
     static List<int> playersTeam = new List<int>();
 
+    // Public get and set
     public List<int> PlayersTeam
     {
         get { return playersTeam; }
         set { playersTeam = value; }
     }
 
-    public int MaxTeamPlayers { get { return MAX_TEAM_PLAYERS; } }
+    // public int MaxTeamPlayers { get { return MAX_TEAM_PLAYERS; } }
 
 
     void OnEnable()
@@ -95,6 +96,57 @@ public class GameManager : NetworkBehaviour
                 NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject()
                     .GetComponent<Player>()
                     .MoveNeutralServerRpc();
+            }
+        }
+    }
+
+    public void CheckPlayersMovePermission(int previousTeam, int currentTeam)
+    {
+        // Descontamos 1 player do equipo anterior
+        playersTeam[previousTeam]--;
+
+        // Sumamos 1 player ao novo equipo
+        playersTeam[currentTeam]++;
+
+        // Debug.Log($"{gameObject.name}.SetPlayersMovePermission ({previousTeam}, {currentTeam})");
+        // Debug.Log($"\t playersTeam({playersTeam[0]}, {playersTeam[1]}, {playersTeam[2]})");
+
+        // Se algún equipo está cheo
+
+        if (playersTeam[1] == MAX_TEAM_PLAYERS || playersTeam[2] == MAX_TEAM_PLAYERS)
+        {
+            foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                var player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
+                    .GetComponent<Player>();
+
+                int playerTeam = player.NwPlayerTeam;
+
+                // Os xogadores do equipo cheo teñen permiso de movimento
+                if (playerTeam != 0 && playersTeam[playerTeam] == MAX_TEAM_PLAYERS)
+                {
+                    player.SetPlayerCanMoveClientRpc(true);
+                }
+
+                // O resto non
+                else
+                {
+                    player.SetPlayerCanMoveClientRpc(false);
+                }
+
+                // Debug.Log($"GameManager Player {uid} Team {player.NwPlayerTeam}");
+            }
+        }
+
+        // Se ningún equipo está cheo, todos teñen permiso de movimento
+        else
+        {
+            foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                var player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
+                    .GetComponent<Player>();
+
+                player.SetPlayerCanMoveClientRpc(true);
             }
         }
     }
