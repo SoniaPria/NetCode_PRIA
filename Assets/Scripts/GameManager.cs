@@ -111,9 +111,18 @@ public class GameManager : NetworkBehaviour
         // Debug.Log($"{gameObject.name}.SetPlayersMovePermission ({previousTeam}, {currentTeam})");
         // Debug.Log($"\t playersTeam({playersTeam[0]}, {playersTeam[1]}, {playersTeam[2]})");
 
-        // Se algún equipo está cheo
+        // Checkeando se algún equipo cumple a condición para cambiar os permisos
+        bool fullTeam = false;
 
-        if (playersTeam[1] == MAX_TEAM_PLAYERS || playersTeam[2] == MAX_TEAM_PLAYERS)
+        int i = 1;
+        while (i <= MAX_TEAMS && !fullTeam)
+        {
+            fullTeam = (playersTeam[i] == MAX_TEAM_PLAYERS);
+            i++;
+        }
+
+        // Se algún equipo está cheo, chequéase en que equipo está cada NetPlayer
+        if (fullTeam)
         {
             foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
             {
@@ -122,23 +131,24 @@ public class GameManager : NetworkBehaviour
 
                 int playerTeam = player.NwPlayerTeam;
 
-                // Os xogadores do equipo cheo teñen permiso de movimento
-                if (playerTeam != 0 && playersTeam[playerTeam] == MAX_TEAM_PLAYERS)
-                {
-                    player.SetPlayerCanMoveClientRpc(true);
-                }
-
-                // O resto non
-                else
+                // Como estamos en fullTeam, os players da xona neutra están penalizados (false)
+                if (playerTeam == 0)
                 {
                     player.SetPlayerCanMoveClientRpc(false);
+                }
+
+                // O resto de xogadores terán permiso true ou false
+                // se están no equipo que cumpla a condición
+                else
+                {
+                    player.SetPlayerCanMoveClientRpc(playersTeam[playerTeam] == MAX_TEAM_PLAYERS);
                 }
 
                 // Debug.Log($"GameManager Player {uid} Team {player.NwPlayerTeam}");
             }
         }
 
-        // Se ningún equipo está cheo, todos teñen permiso de movimento
+        // Se ningún equipo está cheo, todos teñen permiso de movimento (true)
         else
         {
             foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
